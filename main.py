@@ -65,7 +65,7 @@ train_dataset = datasets.ImageFolder(
     ]))
 train_loader = torch.utils.data.DataLoader(
     train_dataset, batch_size=train_batch_size, shuffle=True,
-    num_workers=4, pin_memory=False)
+    num_workers=0, pin_memory=True)
 # push set
 train_push_dataset = datasets.ImageFolder(
     train_push_dir,
@@ -75,7 +75,7 @@ train_push_dataset = datasets.ImageFolder(
     ]))
 train_push_loader = torch.utils.data.DataLoader(
     train_push_dataset, batch_size=train_push_batch_size, shuffle=False,
-    num_workers=4, pin_memory=False)
+    num_workers=0, pin_memory=True)
 # test set
 test_dataset = datasets.ImageFolder(
     test_dir,
@@ -86,7 +86,7 @@ test_dataset = datasets.ImageFolder(
     ]))
 test_loader = torch.utils.data.DataLoader(
     test_dataset, batch_size=test_batch_size, shuffle=False,
-    num_workers=4, pin_memory=False)
+    num_workers=0, pin_memory=True)
 
 # we should look into distributed sampler more carefully at torch.utils.data.distributed.DistributedSampler(train_dataset)
 log('training set size: {0}'.format(len(train_loader.dataset)))
@@ -103,8 +103,17 @@ ppnet = model.construct_PPNet(base_architecture=base_architecture,
                               add_on_layers_type=add_on_layers_type)
 #if prototype_activation_function == 'linear':
 #    ppnet.set_last_layer_incorrect_connection(incorrect_strength=0)
-ppnet = ppnet.cuda()
-ppnet_multi = torch.nn.DataParallel(ppnet)
+# ppnet = ppnet.cuda()
+
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+print('device: ', device)
+ppnet.to(device)
+# train_loader = train_loader.to(device)
+# train_push_loader = train_push_loader.to(device)
+# test_loader = test_loader.to(device)
+
+# ppnet_multi = torch.nn.DataParallel(ppnet)
+ppnet_multi = ppnet
 class_specific = True
 
 # define optimizer
@@ -184,6 +193,6 @@ for epoch in range(num_train_epochs):
                                 class_specific=class_specific, log=log)
                 save.save_model_w_condition(model=ppnet, model_dir=model_dir, model_name=str(epoch) + '_' + str(i) + 'push', accu=accu,
                                             target_accu=0.70, log=log)
-   
+
 logclose()
 

@@ -1,11 +1,11 @@
-base_architecture = 'vgg19'
+base_architecture = 'resnet34'
 img_size = 224
 prototype_shape = (2000, 128, 1, 1)
 num_classes = 200
 prototype_activation_function = 'log'
 add_on_layers_type = 'regular'
 
-experiment_run = '003'
+experiment_run = '001'
 
 data_path = './datasets/cub200_cropped/'
 train_dir = data_path + 'train_cropped_augmented/'
@@ -32,7 +32,7 @@ coefs = {
     'l1': 1e-4,
 }
 
-num_train_epochs = 1000
+num_train_epochs = 200
 num_warm_epochs = 5
 
 push_start = 10

@@ -28,8 +28,8 @@ def push_prototypes(dataloader, # pytorch dataloader (must be unnormalized in [0
     log('\tpush')
 
     start = time.time()
-    prototype_shape = prototype_network_parallel.module.prototype_shape
-    n_prototypes = prototype_network_parallel.module.num_prototypes
+    prototype_shape = prototype_network_parallel.prototype_shape
+    n_prototypes = prototype_network_parallel.num_prototypes
     # saves the closest distance seen so far
     global_min_proto_dist = np.full(n_prototypes, np.inf)
     # saves the patch representation that gives the current smallest distance
@@ -71,7 +71,7 @@ def push_prototypes(dataloader, # pytorch dataloader (must be unnormalized in [0
 
     search_batch_size = dataloader.batch_size
 
-    num_classes = prototype_network_parallel.module.num_classes
+    num_classes = prototype_network_parallel.num_classes
 
     for push_iter, (search_batch_input, search_y) in enumerate(dataloader):
         '''
@@ -106,7 +106,7 @@ def push_prototypes(dataloader, # pytorch dataloader (must be unnormalized in [0
     log('\tExecuting push ...')
     prototype_update = np.reshape(global_min_fmap_patches,
                                   tuple(prototype_shape))
-    prototype_network_parallel.module.prototype_vectors.data.copy_(torch.tensor(prototype_update, dtype=torch.float32).cuda())
+    prototype_network_parallel.prototype_vectors.data.copy_(torch.tensor(prototype_update, dtype=torch.float32).cuda())
     # prototype_network_parallel.cuda()
     end = time.time()
     log('\tpush time: \t{0}'.format(end -  start))
@@ -142,7 +142,7 @@ def update_prototypes_on_batch(search_batch_input,
     with torch.no_grad():
         search_batch = search_batch.cuda()
         # this computation currently is not parallelized
-        protoL_input_torch, proto_dist_torch = prototype_network_parallel.module.push_forward(search_batch)
+        protoL_input_torch, proto_dist_torch = prototype_network_parallel.push_forward(search_batch)
 
     protoL_input_ = np.copy(protoL_input_torch.detach().cpu().numpy())
     proto_dist_ = np.copy(proto_dist_torch.detach().cpu().numpy())
@@ -156,7 +156,7 @@ def update_prototypes_on_batch(search_batch_input,
             img_label = img_y.item()
             class_to_img_index_dict[img_label].append(img_index)
 
-    prototype_shape = prototype_network_parallel.module.prototype_shape
+    prototype_shape = prototype_network_parallel.prototype_shape
     n_prototypes = prototype_shape[0]
     proto_h = prototype_shape[2]
     proto_w = prototype_shape[3]
@@ -166,7 +166,7 @@ def update_prototypes_on_batch(search_batch_input,
         #if n_prototypes_per_class != None:
         if class_specific:
             # target_class is the class of the class_specific prototype
-            target_class = torch.argmax(prototype_network_parallel.module.prototype_class_identity[j]).item()
+            target_class = torch.argmax(prototype_network_parallel.prototype_class_identity[j]).item()
             # if there is not images of the target_class from this batch
             # we go on to the next prototype
             if len(class_to_img_index_dict[target_class]) == 0:
@@ -207,7 +207,7 @@ def update_prototypes_on_batch(search_batch_input,
             
             # get the receptive field boundary of the image patch
             # that generates the representation
-            protoL_rf_info = prototype_network_parallel.module.proto_layer_rf_info
+            protoL_rf_info = prototype_network_parallel.proto_layer_rf_info
             rf_prototype_j = compute_rf_prototype(search_batch.size(2), batch_argmin_proto_dist_j, protoL_rf_info)
             
             # get the whole image
@@ -231,9 +231,9 @@ def update_prototypes_on_batch(search_batch_input,
 
             # find the highly activated region of the original image
             proto_dist_img_j = proto_dist_[img_index_in_batch, j, :, :]
-            if prototype_network_parallel.module.prototype_activation_function == 'log':
-                proto_act_img_j = np.log((proto_dist_img_j + 1) / (proto_dist_img_j + prototype_network_parallel.module.epsilon))
-            elif prototype_network_parallel.module.prototype_activation_function == 'linear':
+            if prototype_network_parallel.prototype_activation_function == 'log':
+                proto_act_img_j = np.log((proto_dist_img_j + 1) / (proto_dist_img_j + prototype_network_parallel.epsilon))
+            elif prototype_network_parallel.prototype_activation_function == 'linear':
                 proto_act_img_j = max_dist - proto_dist_img_j
             else:
                 proto_act_img_j = prototype_activation_function_in_numpy(proto_dist_img_j)

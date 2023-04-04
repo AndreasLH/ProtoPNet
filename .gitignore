@@ -6,3 +6,4 @@ saved_models/
 __pycache__/
 *.pth
 local_analysis/
+.vscode/

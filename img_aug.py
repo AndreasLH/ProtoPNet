@@ -13,7 +13,7 @@ target_folders = [os.path.join(target_dir, folder) for folder in next(os.walk(di
 failed = []
 # images at idx 186 seem to be broken???
 for i in range(len(folders)):
-	if i == 186: continue
+    if i == 186: continue
     fd = folders[i]
     tfd = target_folders[i]
     tfd = '../../../../' + tfd

@@ -55,7 +55,8 @@ log, logclose = create_logger(log_filename=os.path.join(model_dir, 'prune.log'))
 
 ppnet = torch.load(original_model_dir + original_model_name)
 ppnet = ppnet.cuda()
-ppnet_multi = torch.nn.DataParallel(ppnet)
+ppnet_multi = ppnet 
+# ppnet_multi = torch.nn.DataParallel(ppnet)
 class_specific = True
 
 # load the data

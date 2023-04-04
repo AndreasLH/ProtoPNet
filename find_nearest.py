@@ -66,12 +66,12 @@ def find_k_nearest_patches_to_prototypes(dataloader, # pytorch dataloader (must 
     '''
     log('find nearest patches')
     start = time.time()
-    n_prototypes = prototype_network_parallel.module.num_prototypes
+    n_prototypes = prototype_network_parallel.num_prototypes
     
-    prototype_shape = prototype_network_parallel.module.prototype_shape
+    prototype_shape = prototype_network_parallel.prototype_shape
     max_dist = prototype_shape[1] * prototype_shape[2] * prototype_shape[3]
 
-    protoL_rf_info = prototype_network_parallel.module.proto_layer_rf_info
+    protoL_rf_info = prototype_network_parallel.proto_layer_rf_info
 
     heaps = []
     # allocate an array of n_prototypes number of heaps
@@ -92,7 +92,7 @@ def find_k_nearest_patches_to_prototypes(dataloader, # pytorch dataloader (must 
         with torch.no_grad():
             search_batch = search_batch.cuda()
             protoL_input_torch, proto_dist_torch = \
-                prototype_network_parallel.module.push_forward(search_batch)
+                prototype_network_parallel.push_forward(search_batch)
 
         #protoL_input_ = np.copy(protoL_input_torch.detach().cpu().numpy())
         proto_dist_ = np.copy(proto_dist_torch.detach().cpu().numpy())
@@ -122,9 +122,9 @@ def find_k_nearest_patches_to_prototypes(dataloader, # pytorch dataloader (must 
                     original_img = search_batch_input[img_idx].numpy()
                     original_img = np.transpose(original_img, (1, 2, 0))
 
-                    if prototype_network_parallel.module.prototype_activation_function == 'log':
-                        act_pattern = np.log((distance_map[j] + 1)/(distance_map[j] + prototype_network_parallel.module.epsilon))
-                    elif prototype_network_parallel.module.prototype_activation_function == 'linear':
+                    if prototype_network_parallel.prototype_activation_function == 'log':
+                        act_pattern = np.log((distance_map[j] + 1)/(distance_map[j] + prototype_network_parallel.epsilon))
+                    elif prototype_network_parallel.prototype_activation_function == 'linear':
                         act_pattern = max_dist - distance_map[j]
                     else:
                         act_pattern = prototype_activation_function_in_numpy(distance_map[j])

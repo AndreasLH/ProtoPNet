@@ -5,3 +5,4 @@ saved_models/
 *.pyc
 __pycache__/
 *.pth
+local_analysis/

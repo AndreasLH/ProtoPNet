@@ -40,9 +40,10 @@ start_epoch_number = int(epoch_number_str)
 print('load model from ' + load_model_path)
 ppnet = torch.load(load_model_path)
 ppnet = ppnet.cuda()
-ppnet_multi = torch.nn.DataParallel(ppnet)
+# ppnet_multi = torch.nn.DataParallel(ppnet)
+ppnet_multi = ppnet
 
-img_size = ppnet_multi.module.img_size
+img_size = ppnet_multi.img_size
 
 # load the data
 # must use unaugmented (original) dataset
@@ -60,7 +61,7 @@ train_dataset = datasets.ImageFolder(
     ]))
 train_loader = torch.utils.data.DataLoader(
     train_dataset, batch_size=batch_size, shuffle=True,
-    num_workers=4, pin_memory=False)
+    num_workers=0, pin_memory=True)
 
 # test set: do not normalize
 test_dataset = datasets.ImageFolder(
@@ -71,7 +72,7 @@ test_dataset = datasets.ImageFolder(
     ]))
 test_loader = torch.utils.data.DataLoader(
     test_dataset, batch_size=batch_size, shuffle=True,
-    num_workers=4, pin_memory=False)
+    num_workers=0, pin_memory=True)
 
 root_dir_for_saving_train_images = os.path.join(load_model_dir,
                                                 load_model_name.split('.pth')[0] + '_nearest_train')

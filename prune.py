@@ -27,11 +27,11 @@ def prune_prototypes(dataloader,
                                                           log=log)
 
     ### find prototypes to prune
-    original_num_prototypes = prototype_network_parallel.module.num_prototypes
+    original_num_prototypes = prototype_network_parallel.num_prototypes
     
     prototypes_to_prune = []
-    for j in range(prototype_network_parallel.module.num_prototypes):
-        class_j = torch.argmax(prototype_network_parallel.module.prototype_class_identity[j]).item()
+    for j in range(prototype_network_parallel.num_prototypes):
+        class_j = torch.argmax(prototype_network_parallel.prototype_class_identity[j]).item()
         nearest_train_patch_class_counts_j = Counter(nearest_train_patch_class_ids[j])
         # if no such element is in Counter, it will return 0
         if nearest_train_patch_class_counts_j[class_j] < prune_threshold:
@@ -43,7 +43,7 @@ def prune_prototypes(dataloader,
     ### bookkeeping of prototypes to be pruned
     class_of_prototypes_to_prune = \
         torch.argmax(
-            prototype_network_parallel.module.prototype_class_identity[prototypes_to_prune],
+            prototype_network_parallel.prototype_class_identity[prototypes_to_prune],
             dim=1).numpy().reshape(-1, 1)
     prototypes_to_prune_np = np.array(prototypes_to_prune).reshape(-1, 1)
     prune_info = np.hstack((prototypes_to_prune_np, class_of_prototypes_to_prune))
@@ -56,8 +56,8 @@ def prune_prototypes(dataloader,
             prune_info)
 
     ### prune prototypes
-    prototype_network_parallel.module.prune_prototypes(prototypes_to_prune)
-    #torch.save(obj=prototype_network_parallel.module,
+    prototype_network_parallel.prune_prototypes(prototypes_to_prune)
+    #torch.save(obj=prototype_network_parallel,
     #           f=os.path.join(original_model_dir, 'pruned_prototypes_epoch{}_k{}_pt{}'.format(epoch_number,
     #                                              k,
     #                                              prune_threshold),
